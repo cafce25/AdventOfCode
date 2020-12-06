@@ -1,3 +1,4 @@
-*input*
 *.o
 *.hi
+.stack-work/
+*.cabal
