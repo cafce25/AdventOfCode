@@ -23,7 +23,8 @@ instance Read Color where
 newtype BagContents = BagContents (Int, Color)
 
 instance Show BagContents where
-    show (BagContents (n, color)) = show n ++ " " ++ show color ++ if n > 1 then " bags" else " bag"
+    show (BagContents (n, color)) =
+        show n ++ " " ++ show color ++ if n > 1 then " bags" else " bag"
 
 instance Read BagContents where
     readPrec = lift contentBag
@@ -71,13 +72,11 @@ instance Read Bag where
         char '.'
         return (Bag color contents)
 
---instance Read BagContents where
---    readPrec = lift readBagContents
-
-
 lowerCaseChar x = x >= 'a' && x <= 'z'
 
-main = getArgs >>= parse >>= doParts . bagMapFromList . (map read :: [String] -> [Bag]) . lines
+main = getArgs
+    >>= parse
+    >>= doParts . bagMapFromList . (map read :: [String] -> [Bag]) . lines
 
 sgColor = Color "shiny gold"
 doParts map = do
@@ -96,10 +95,10 @@ contentColor (BagContents c) = snd c
 contentCount (BagContents c) = fst c
 
 bagContains :: Color -> Map Color Bag -> [Bag]
-bagContains contained bags = elems.Map.filter hasShinyGolden $ bags
-    where hasShinyGolden bag = if any ((== contained).contentColor) (contents bag)
-              then True
-              else any (hasShinyGolden.(bags!).contentColor) (contents bag)
+bagContains contained bags = elems.Map.filter hasBag $ bags
+    where hasBag bag = any (isOrHasBag.contentColor) (contents bag)
+          isOrHasBag c = c == contained || (hasBag.(bags!) $ c)
+              
 
 bagsContained :: Color -> Map Color Bag -> Int
 bagsContained bagColor bags = sum.map (\(BagContents (n,c)) -> n + n * bagsContained c bags) $ contents (bags!bagColor)
