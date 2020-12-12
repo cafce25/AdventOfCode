@@ -29,11 +29,31 @@ rotate d (Action _ angle) = directions d !! quarterTurns
     where quarterTurns = (angle `div` 90) `mod` 4
           directions c = dropWhile (/= c) $ cycle "NESW"
 
+followWaypoint :: Position -> Position -> [Action] -> [Int]
+followWaypoint (y, x) _ [] = [y, x]
+followWaypoint pos@(y, x) wp@(wy, wx) (i@(Action a d):instructions)
+    | a == 'F' = followWaypoint (y+d*wy, x+d*wx) wp instructions
+    | a == 'N' = followWaypoint pos (wy+d, wx) instructions
+    | a == 'S' = followWaypoint pos (wy-d, wx) instructions
+    | a == 'E' = followWaypoint pos (wy, wx+d) instructions
+    | a == 'W' = followWaypoint pos (wy, wx-d) instructions
+    | otherwise = followWaypoint pos (rotateWaypoint wp i) instructions
+
+rotateWaypoint :: Position -> Action -> Position
+rotateWaypoint p (Action 'L' angle) = rotateWaypoint p (Action 'R' (angle * 3))
+rotateWaypoint (y, x) (Action _ angle) = (x * sinA + y * cosA, x * cosA - y * sinA)
+    where angleRad :: Double
+          angleRad = (fromIntegral angle * pi) / 180
+          sinA :: Int
+          sinA = round $ sin (-angleRad)
+          cosA :: Int
+          cosA = round $ cos angleRad
+
 part1 :: Input -> Int
 part1 = sum. map abs. followDirections (0, 0) 'E'
 
-part2 :: Input -> ()
-part2 = const ()
+part2 :: Input -> Int
+part2 = sum. map abs. followWaypoint (0, 0) (1, 10)
 
 prepare :: String -> Input
 prepare = map (\x -> Action (head x) (read $ tail x)) . lines
