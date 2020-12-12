@@ -14,6 +14,7 @@ import Text.Regex.Applicative ( anySym
                               , match
                               , psym
                               , string )
+import Text.Regex.PCRE hiding (match)
 
 type Input = [String]
 
@@ -37,8 +38,12 @@ containsNaughtySubstring naughty = isJust . match (many anySym *> asum (map stri
 part1 :: Input -> Int
 part1 = length . filter niceString
 
-part2 :: Input -> ()
-part2 = const ()
+newNiceString :: String -> Bool
+newNiceString s = all (\x -> x s) [ (=~ "(..).*\\1")
+                                  , (=~ "(.).\\1")]
+
+part2 :: Input -> Int
+part2 = length. filter newNiceString
 
 prepare :: String -> Input
 prepare = lines
