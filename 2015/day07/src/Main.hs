@@ -119,8 +119,8 @@ getPortsTable instructions = table
 part1 :: Input -> Int
 part1 ins = getPortsTable ins ! "a"
 
-part2 :: Input -> ()
-part2 ins = ()
+part2 :: Input -> Int
+part2 ins = getPortsTable (ins ++ [Assign (Right 3176) "b"]) ! "a"
 
 prepare :: String -> Input
 prepare = map read . lines
