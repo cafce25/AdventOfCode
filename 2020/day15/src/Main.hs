@@ -1,27 +1,25 @@
 module Main where
 
 import Control.Arrow ((&&&))
-import Data.Foldable (toList)
-import Data.List.Split
-import Data.Sequence (Seq((:|>)), (|>))
-import qualified Data.Sequence as S
-import System.Environment
-
-import Debug.Trace
+import Data.IntMap (IntMap)
+import qualified Data.IntMap.Lazy as M
+import Data.List.Split (splitOn)
+import System.Environment (getArgs)
 
 type Input = [Int]
+
+list :: [Int] -> [Int]
+list start = start ++ l (length start) (last start) startMap
+    where startMap = M.fromList (zip start [0..(pred.pred.length$ start)])
+          l :: Int -> Int -> IntMap Int -> [Int]
+          l n lastEl past = this: l (succ n) this (M.insert lastEl (pred n) past) 
+              where this = (pred n) - M.findWithDefault (pred n) lastEl past
                                                  
 part1 :: Input -> Int
-part1 inp = list (2020 - length inp) (S.fromList inp)
-list :: Int -> Seq Int -> Int
-list 0 (_:|>p) = p 
-list n s@(l :|> p) = if p `elem` l
-                     then list (pred n) (s |> (succ $ length $ takeWhile (/= p) ls))
-                     else list (pred n) (s |> 0)
-    where ls = reverse $ toList l
+part1 = (!! (pred 2020)) . list
 
-part2 :: Input -> ()
-part2 = const ()
+part2 :: Input -> Int
+part2 = (!! (pred 30000000)) . list
 
 prepare :: String -> Input
 prepare = map read . splitOn ","
