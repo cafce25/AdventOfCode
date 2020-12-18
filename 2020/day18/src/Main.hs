@@ -16,7 +16,7 @@ import           Text.Megaparsec hiding (getInput)
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
-type Input = [Expr]
+type Input = [Text]
 type Parser = Parsec Void Text
 data Expr = Int Int
           | Sum     Expr Expr
@@ -43,33 +43,45 @@ value (Product e1 e2) = value e1 * value e2
 pInteger :: Parser Expr
 pInteger = Int <$> lexeme L.decimal
 
-pTerm :: Parser Expr
-pTerm = choice
-    [ parens pExpr
-    , pInteger
-    ]
+pExpr :: [[Operator Parser Expr]] -> Parser Expr
+pExpr opTable = pExpr'
+    where pExpr' = makeExprParser pTerm opTable
+          pTerm = choice
+              [ parens pExpr'
+              , pInteger
+              ]
 
-pExpr :: Parser Expr
-pExpr = makeExprParser pTerm operatorTable
+pExprSame, pExprPlusMul :: Parser Expr
+pExprSame = pExpr operatorTableSame
+pExprPlusMul = pExpr operatorTablePlusMul
 
-operatorTable :: [[Operator Parser Expr]]
-operatorTable =
+operatorTableSame :: [[Operator Parser Expr]]
+operatorTableSame =
     [ [ binary "*" Product
       , binary "+" Sum
       ]
     ]
 
+operatorTablePlusMul :: [[Operator Parser Expr]]
+operatorTablePlusMul =
+    [ [ binary "+" Sum ]
+    , [ binary "*" Product ]
+    ]
+
 binary :: Text -> (Expr -> Expr -> Expr) -> Operator Parser Expr
 binary name f = InfixL (f <$ symbol name)
 
-part1 :: Input -> Int
-part1 = sum . map value
+parseSum :: Parser Expr -> Input -> Int
+parseSum p = sum. map value. rights. map (parse p "")
 
-part2 :: Input -> ()
-part2 = const ()
+part1 :: Input -> Int
+part1 = parseSum pExprSame 
+
+part2 :: Input -> Int
+part2 = parseSum pExprPlusMul
 
 prepare :: String -> Input
-prepare = rights. map (parse pExpr "". T.pack) . lines 
+prepare = map (T.pack) . lines 
 
 main :: IO ()
 main = getInput >>= print . (part1 &&& part2) . prepare
