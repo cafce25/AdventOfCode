@@ -1,13 +1,11 @@
-{-# LANGUAGE ApplicativeDo     #-}
-{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
 
 module Main where
 
 import           Control.Arrow ((&&&))
+import           Control.Monad (liftM)
 import           Control.Monad.Combinators.Expr
-import           Data.Either (rights)
+import           Data.Maybe (mapMaybe)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Void
@@ -72,7 +70,7 @@ binary :: Text -> (Expr -> Expr -> Expr) -> Operator Parser Expr
 binary name f = InfixL (f <$ symbol name)
 
 parseSum :: Parser Expr -> Input -> Int
-parseSum p = sum. map value. rights. map (parse p "")
+parseSum p = sum. mapMaybe (liftM value <$> parseMaybe p)
 
 part1 :: Input -> Int
 part1 = parseSum pExprSame 
