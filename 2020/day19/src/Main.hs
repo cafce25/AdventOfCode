@@ -16,7 +16,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Void
 import           System.Environment (getArgs)
-import           Text.Megaparsec hiding (getInput)
+import           Text.Megaparsec hiding (getInput, some)
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
@@ -41,10 +41,10 @@ symbol :: Text -> Parser Text
 symbol = L.symbol sc
 
 getParser :: IntMap Expr -> Expr -> Parser Text
-getParser _ (Char s) = symbol s 
-getParser varTable (Variable i) = getParser varTable (varTable M.! i)
-getParser varTable (Sum a b) = try (getParser varTable a) <|> getParser varTable b
-getParser varTable (Prod a b) = getParser varTable a >> getParser varTable b
+getParser _ (Char s) = try (symbol s)
+getParser varTable (Variable i) = try (getParser varTable (varTable M.! i))
+getParser varTable (Sum a b)  = try (getParser varTable b) <|> try (getParser varTable a)
+getParser varTable (Prod a b) = T.append <$> try (getParser varTable a) <*> try (getParser varTable b)
 
 pVarname :: Parser Varname
 pVarname = lexeme L.decimal
@@ -85,8 +85,16 @@ part1 (rules, strings) = length . filter (isJust . parseMaybe parser0) $ strings
     where rulesMap = M.fromList [(i, expr) | (Rule i expr) <- rules]
           parser0 = getParser rulesMap (rulesMap M.! 0) <* eof
 
-part2 :: Input -> ()
-part2 = const ()
+part2 :: Input -> Int
+part2 (rules, strings) = length . filter (isJust . parseMaybe parser0) $ strings
+    where rulesMap = M.fromList [(i, expr) | (Rule i expr) <- rules]
+          getParser' x = getParser rulesMap (rulesMap M.! x)
+          repParser p n = try $ replicateM_ n (getParser' p)
+          parser0 = do
+              void $ getParser' 42
+              a <- some $ getParser' 42
+              void $ choice (map (repParser 31) [length a, (length a)-1..1])
+              eof
 
 prepare :: String -> Input
 prepare = second (arr tail) . partitionEithers . map parse' . T.lines. T.pack
