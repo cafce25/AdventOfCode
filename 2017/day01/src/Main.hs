@@ -10,19 +10,33 @@ import Text.Read (readMaybe)
 
 type Input = [Int]
 
+solve :: Input -> Int
+solve (x:xs@(y:_)) = if x == y
+                        then x + solve xs
+                        else solve xs
+solve _ = 0
+
 part1 :: Input -> Int
-part1 (x:xs@(y:_)) = if x == y
-                        then x + part1 xs
-                        else part1 xs
-part1 _ = 0
-
-part2 :: Input -> ()
-part2 = const ()
-
-prepare :: String -> Input
-prepare = putlast . mapMaybe (readMaybe . (:[])) 
+part1 = solve . putlast
     where putlast xs@(x:_) = xs ++ [x]
           putlast _ = error "invalid input"
+
+solve' :: Int -> Input -> Int
+solve' n xs = if n >= l
+                 then 0
+                 else (if xs !! n == xs !! ((n + l2) `mod` l)
+                         then ((xs!!n) +)
+                         else id) $ solve' (succ n) xs
+    where l = length xs
+          l2 = l `div` 2
+
+
+
+part2 :: Input -> Int
+part2 = solve' 0
+
+prepare :: String -> Input
+prepare = mapMaybe (readMaybe . (:[])) 
 
 main :: IO ()
 main = getInput >>= print . (part1 &&& part2) . prepare
