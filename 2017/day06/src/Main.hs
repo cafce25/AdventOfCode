@@ -27,14 +27,17 @@ distribute banks = M.mapWithKey distribute' banks
               | otherwise = v + q
 
 part1 :: Input -> Int
-part1 = length . takeWhileNoDupe S.empty . map M.elems . iterate distribute  
-    where takeWhileNoDupe _ [] = [] 
-          takeWhileNoDupe acc (x:xs) = if x `S.member` acc
-                                     then []
-                                     else x:(takeWhileNoDupe (S.insert x acc) xs )
+part1 = pred . length . takeWhileNoDupe . iterate distribute  
 
-part2 :: Input -> ()
-part2 = const ()
+takeWhileNoDupe :: Ord a => [a] -> [a]
+takeWhileNoDupe = takeWhileNoDupe' S.empty
+    where takeWhileNoDupe' _ [] = [] 
+          takeWhileNoDupe' acc (x:xs) = if x `S.member` acc
+                                then [x]
+                                else x:(takeWhileNoDupe' (S.insert x acc) xs )
+
+part2 :: Input -> Int
+part2 = pred . length . (\x -> dropWhile (/= last x) x) . takeWhileNoDupe . iterate distribute
 
 prepare :: String -> Input
 prepare = M.fromList . zip [0..] . map read . words
