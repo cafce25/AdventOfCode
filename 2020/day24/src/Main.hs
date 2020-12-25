@@ -6,6 +6,8 @@ module Main where
 import Control.Arrow ((&&&))
 import Data.List (group, sort)
 import Data.Maybe (fromJust)
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Void (Void)
 import System.Environment (getArgs)
 import Text.Megaparsec
@@ -15,9 +17,14 @@ type Input = [[Move]]
 data Move = E | SE | SW | W | NW | NE deriving Show
 type Parser = Parsec Void String
 type Coord = (Int, Int)
+type Board = Set Coord
+
 
 part1 :: Input -> Int
-part1 = length . filter ((==1) . (`mod` 2) . fst) . map (length &&& head) . group . sort . map coordAfterMoves
+part1 = length . blackTiles
+
+blackTiles :: [[Move]] -> [Coord]
+blackTiles = map snd . filter ((==1) . (`mod` 2) . fst) . map (length &&& head) . group . sort . map coordAfterMoves
 
 moveP :: Parser Move
 moveP = choice
@@ -36,18 +43,42 @@ movesListP :: Parser [[Move]]
 movesListP = movesP `endBy` eol
 
 coordAfterMoves :: [Move] -> Coord
-coordAfterMoves = coordAfterMoves' 0 0
-    where coordAfterMoves' q r [] = (q, r)
-          coordAfterMoves' q r (m:ms) = case m of
-                                          E -> coordAfterMoves' (q+1) r ms
-                                          W -> coordAfterMoves' (q-1) r ms
-                                          NE -> coordAfterMoves' (q+1) (r-1) ms
-                                          SW -> coordAfterMoves' (q-1) (r+1) ms
-                                          NW -> coordAfterMoves' q (r-1) ms
-                                          SE -> coordAfterMoves' q (r+1) ms
+coordAfterMoves = foldr (flip move) (0, 0)
 
-part2 :: Input -> ()
-part2 = const ()
+move :: (Num a) => (a, a) -> Move -> (a, a)
+move (q, r) m = case m of
+                  E ->  (q+1, r)
+                  W ->  (q-1, r)
+                  NE -> (q+1, r-1)
+                  SW -> (q-1, r+1)
+                  NW -> (q, r-1)
+                  SE -> (q, r+1)
+
+part2 :: Input -> Int
+part2 = S.size . (!!100) . iterate step . S.fromList . blackTiles
+
+neighbours :: Board -> Coord -> Int
+neighbours b c = length $ filter ((`S.member` b) . move c) [E, NE, NW, W, SW, SE]
+
+bounds :: Board -> (Coord, Coord)
+bounds b = ((minimum qs, minimum rs), (maximum qs, maximum rs))
+    where coords = S.toList b
+          qs = map fst coords
+          rs = map snd coords
+
+step :: Board -> Board
+step b = S.fromList $ [(q, r) | let ((minQ, minR), (maxQ, maxR)) = bounds b
+                      , q <- [pred minQ..succ maxQ]
+                      , r <- [pred minR..succ maxR]
+                      , let n = neighbours b (q, r)
+                      , if (q, r) `S.member` b
+                           then n `elem` [1, 2]
+                           else n == 2]
+{-
+ -rules:
+ -     Any black tile with zero or more than 2 black tiles immediately adjacent to it is flipped to white
+ -     Any white tile with exactly 2 black tiles immediately adjacent to it is flipped to black
+ -}
 
 prepare :: String -> Input
 prepare = fromJust . parseMaybe movesListP
