@@ -23,9 +23,7 @@ executable {{name}}
               -Wredundant-constraints
   build-depends:       base >= 4.7 && < 5
                      , containers
-                     , parsec
-                     , regex-applicative
-                     , recursion-schemes
+                     , megaparsec
 
 {-# START_FILE Setup.hs #-}
 import Distribution.Simple
@@ -52,10 +50,10 @@ prepare :: String -> Input
 prepare = lines
 
 main :: IO ()
-main = getInput >>= print . (part1 &&& part2) . prepare
+main = getInputContents >>= print . (part1 &&& part2) . prepare
 
-getInput :: IO String
-getInput = do
+getInputContents :: IO String
+getInputContents = do
     args <- getArgs
     case args of
         []    -> readFile "input"
