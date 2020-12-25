@@ -29,17 +29,27 @@ part1 :: Input -> Int
 part1 fs = length . filter (`notElem` ai) . concat . map ingredients $ fs
     where ai = allergeneIngredients fs
 
-all_ :: (Food -> [String]) -> [Food] -> [String]
-all_ f = foldr1 union . map f
+allAllergenes :: [Food] -> [Allergene]
+allAllergenes = foldr1 union . map allergenes
 
 possibleIngredients :: Allergene -> [Food] -> [Ingredient]
 possibleIngredients a = foldr1 intersect . map ingredients . filter (elem a . allergenes)
 
 allergeneIngredients :: [Food] -> [Ingredient] 
-allergeneIngredients fs = concat $ map (`possibleIngredients` fs) $ all_ allergenes fs
+allergeneIngredients = concat . map snd . allergenesToIngredients
 
-part2 :: Input -> ()
-part2 = const ()
+part2 :: Input -> String
+part2 = intercalate "," . map snd . sortOn fst . removeMultiples . sortOn (length . snd) . allergenesToIngredients
+
+removeMultiples :: [(Allergene, [Ingredient])] -> [(Allergene, Ingredient)]
+removeMultiples [] = []
+removeMultiples ((aller, [ingr]):rest) = (aller, ingr):removeMultiples sortedRest
+    where rest' = map (\(a, is) -> (a, delete ingr is)) rest
+          sortedRest = sortOn (length . snd) rest'
+removeMultiples r = error $ "ambiguos ingredients in " ++ show r
+
+allergenesToIngredients :: [Food] -> [(Allergene, [Ingredient])]
+allergenesToIngredients fs = map (id &&& (`possibleIngredients` fs)) $ allAllergenes fs
 
 prepare :: String -> Input
 prepare = fromJust . parseMaybe foodsP
