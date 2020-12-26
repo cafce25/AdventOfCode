@@ -29,30 +29,32 @@ data Instr = Inc Reg Val Con
            deriving Show
 
 
-run :: [Instr] -> Map Reg Val
-run = foldl step M.empty
-    where step memory instr = let (reg, change, cond) =
-                                      case instr of
-                                        Inc r v c -> (r, v, c)
-                                        Dec r v c -> (r, -v, c)
-                                  (cReg, cmp, cVal) =
-                                      case cond of
-                                        Gt r v -> (r, (>), v)
-                                        Lt r v -> (r, (<), v)
-                                        Ge r v -> (r, (>=), v)
-                                        Le r v -> (r, (<=), v)
-                                        E  r v -> (r, (==), v)
-                                        Ne r v -> (r, (/=), v)
-                                  pval = M.findWithDefault 0 reg memory
-                               in if M.findWithDefault 0 cReg memory `cmp` cVal
-                                     then M.insert reg (pval + change) memory
-                                     else memory
+run :: [Instr] -> (Map Reg Val, Int)
+run = foldl step (M.empty, 0)
+    where step (memory, h) instr =
+             let (reg, change, cond) =
+                     case instr of
+                       Inc r v c -> (r, v, c)
+                       Dec r v c -> (r, -v, c)
+                 (cReg, cmp, cVal) =
+                     case cond of
+                       Gt r v -> (r, (>), v)
+                       Lt r v -> (r, (<), v)
+                       Ge r v -> (r, (>=), v)
+                       Le r v -> (r, (<=), v)
+                       E  r v -> (r, (==), v)
+                       Ne r v -> (r, (/=), v)
+                 pval = M.findWithDefault 0 reg memory
+                 val = pval + change
+              in if M.findWithDefault 0 cReg memory `cmp` cVal
+                    then (M.insert reg val memory, max h val)
+                    else (memory, h)
 
 part1 :: Input -> Int
-part1 = maximum . M.elems . run
+part1 = maximum . M.elems . fst . run
 
-part2 :: Input -> ()
-part2 = const ()
+part2 :: Input -> Int
+part2 = snd . run
 
 insP :: Parser Instr
 insP = try decP <|> incP
