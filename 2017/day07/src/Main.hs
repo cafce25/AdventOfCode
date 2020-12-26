@@ -4,7 +4,7 @@
 module Main where
 
 import Control.Arrow ((&&&))
-import Data.List (sortOn)
+import Data.List
 import Data.Map.Lazy (Map, (!))
 import Data.Maybe (fromJust)
 import Data.Void (Void)
@@ -13,6 +13,7 @@ import Text.Megaparsec hiding (getInput)
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import qualified Data.Map.Lazy as M
+
 
 type Input = Tree
 type Parser = Parsec Void String
@@ -34,8 +35,23 @@ data Tree = Tree
 part1 :: Input -> String
 part1 = name
 
-part2 :: Input -> ()
-part2 = const ()
+calculateWeight :: Tree -> Int
+calculateWeight (Leaf _ w) = w
+calculateWeight (Tree _ w cs) = w + (sum $ map calculateWeight cs)
+
+findCorrectedWeight :: Int -> Tree -> Int
+findCorrectedWeight sw (Leaf _ _) = sw
+findCorrectedWeight sw (Tree _ _ cs) = if length gws > 1
+                                         then findCorrectedWeight rWeight wTree
+                                         else sw - (sum $ map calculateWeight cs)
+    where cws = sort $ map calculateWeight cs
+          gws = group cws
+          wTree = fromJust $ find ((wWeight ==) . calculateWeight) cs
+          wWeight = head $ fromJust $ find ((1 ==) . length) gws
+          rWeight = head $ fromJust $ find ((1 /=) . length) gws
+
+part2 :: Input -> Int
+part2 t = findCorrectedWeight (calculateWeight t) t 
 
 getRoot :: Map String Tree -> Tree
 getRoot = head . reverse . sortOn depth . M.elems
