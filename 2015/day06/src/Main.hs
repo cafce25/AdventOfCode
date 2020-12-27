@@ -1,6 +1,4 @@
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE BangPatterns #-}
 
 module Main where
 

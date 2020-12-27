@@ -30,12 +30,13 @@ part1 = sum . zipWith (*) [1..] . toList . S.reverse . uncurry battleOut
 battle' :: Deck -> Deck -> (Deck, Deck)
 battle' a@S.Empty b = (a, b)
 battle' a b@S.Empty = (a, b)
-battle' (a :<| as) (b :<| bs) =
-    if length as >= a && length bs >= b
-       then if winA Set.empty (S.take a as) (S.take b bs)
-           then resultA else resultB
-       else if a > b
-           then resultA else resultB
+battle' (a :<| as) (b :<| bs)
+    | length as >= a && length bs >= b
+    = if winA Set.empty (S.take a as) (S.take b bs)
+         then resultA
+         else resultB
+    | a > b = resultA
+    | otherwise = resultB
     where resultA = (as |> a |> b, bs)
           resultB = (as, bs |> b |> a)
 

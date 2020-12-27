@@ -26,8 +26,8 @@ readTurn :: ReadP Instruction
 readTurn = do
     _ <- string "turn"
     skipSpaces
-    onoff <- (   (string "on"  >> skipSpaces >> return True)
-             +++ (string "off" >> skipSpaces >> return False))
+    onoff <-     (string "on"  >> skipSpaces >> return True )
+             +++ (string "off" >> skipSpaces >> return False)
     (from, to) <- readFromTo
     return $ Turn onoff from to
 

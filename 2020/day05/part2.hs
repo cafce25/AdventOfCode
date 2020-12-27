@@ -1,9 +1,8 @@
 import Data.List
---main = interact $ show . maximum . map seatToNumber . lines -- part One
-main = interact $ show .
-    (\x -> x-1) . fst . head . snd . -- extract seat after mine, -1 = my seat
-    span (\(x, y) -> x > y) . zip [97..] . sort . -- split into seats before and after mine
-    map seatToNumber . lines -- get all other seats
+main = interact
+     $ show . (\x -> x-1) . fst . head
+     . dropWhile (uncurry (>)) . zip [97..]
+     . sort . map seatToNumber . lines
 
 seatToNumber :: String -> Int
 seatToNumber seat = seatToNumber' seat 0

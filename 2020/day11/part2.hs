@@ -1,21 +1,18 @@
 import Data.List hiding (insert)
 import Data.List.Split
 import Data.Map (Map, (!))
-import Debug.Trace
 import System.Environment
 import System.IO
 import qualified Data.Map as Map
 
-data Board = Board { rBoard :: (Map (Int, Int) Char)
+data Board = Board { rBoard :: Map (Int, Int) Char
                    , rHeight :: Int
                    , rWidth :: Int
                    } deriving (Eq)
 
---nX = 96
---nY = 90
 
 instance Show Board where
-    show Board{ rWidth = nX, rBoard = board} = intercalate "\n" . chunksOf (nX) . map snd . Map.toList $ board
+    show Board{ rWidth = nX, rBoard = board} = intercalate "\n" . chunksOf nX . map snd . Map.toList $ board
 
 main = getArgs
     >>= parse
@@ -24,8 +21,6 @@ main = getArgs
     . filter (=='#')
     . show
     . stepToFinalFar
---    . getFarNeighbours (1,0)
---    . stepNFar 7
     . readBoard
 
 
@@ -40,17 +35,6 @@ readBoard input = readBoard' (0, 0) (Board Map.empty height width) input
           readBoard' (y, x) board ('\n':input) = readBoard' (y+1, 0) board input
           readBoard' pos@(y,x) board@Board{rBoard=map} (p:input) = board' `seq` readBoard' (y,x+1) board' input
               where board' = board{rBoard = Map.insert pos p map}
-
-{-
-emptyBoard = Board $ Map.fromList [
-    ((y, x), '.') 
-    | x <- [(-1)..nX]
-    , y <- [(-1)..nY]
-    , x == -1 
-    || x == nX 
-    || y == -1 
-    || y == nY]
--}
 
 boardMap Board{rBoard = map} = map
 
@@ -99,4 +83,4 @@ step' getN board@Board{rBoard = map} = board{rBoard = Map.mapWithKey stepPlace m
 stepToFinal = stepToFinal' step
 stepToFinalFar = stepToFinal' stepFar
 stepToFinal' s board = if board == next then board else stepToFinal' s next
-   where next = trace "" $ s $ traceShowId board
+   where next =  s board

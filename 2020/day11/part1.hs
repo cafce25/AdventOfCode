@@ -8,11 +8,12 @@ import Debug.Trace
 
 newtype Board = Board (Map (Int, Int) Char) deriving (Eq)
 
+nX, nY :: Int
 nX = 96
 nY = 90
 
 instance Show Board where
-    show (Board board) = intercalate "\n" . chunksOf (nX) . map snd . Map.toList $ board
+    show (Board board) = intercalate "\n" . chunksOf nX . map snd . Map.toList $ board
 
 main = getArgs
     >>= parse
@@ -31,24 +32,14 @@ readBoard (y, x) board ('\n':input) = readBoard (y+1, 0) board input
 readBoard pos@(y,x) (Board board) (p:input) = board' `seq` readBoard (y,x+1) board' input
     where board' = Board $ Map.insert pos p board
 
-{-
-emptyBoard = Board $ Map.fromList [
-    ((y, x), '.') 
-    | x <- [(-1)..nX]
-    , y <- [(-1)..nY]
-    , x == -1 
-    || x == nX 
-    || y == -1 
-    || y == nY]
--}
-
 boardMap (Board map) = map
 
-getNeighbours (y, x) board = map (getSeat board) [
-    (y-dy, x-dx)
-    | dy <- [-1..1]
-    , dx <- [-1..1]
-    , dx /= 0 || dy /= 0] 
+getNeighbours (y, x) board =
+   [ getSeat board (y-dy, x-dx)
+   | dy <- [-1..1]
+   , dx <- [-1..1]
+   , dx /= 0 || dy /= 0
+   ] 
 
 getSeat (Board board) (y, x)
     | y <= -1 || x <= -1 || x >= nX || y >= nY = '.'

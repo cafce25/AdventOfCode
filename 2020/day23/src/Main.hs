@@ -57,7 +57,7 @@ part2 :: Input -> Int
 part2 i = product . take 2 . tail . swapST 10000000 . (<> [1 + length i..1000000]) $ i
     
 arrToList :: UArray Label Label -> [Label]
-arrToList ary = arrToList' 1 ary
+arrToList = arrToList' 1
   where arrToList' l ar = if ar!l == 1 then [l] else l:arrToList' (ar!l) ar
 
 refArrayFromList :: [Int] -> ST s (Ary s)

@@ -1,6 +1,6 @@
 import Data.List.Unique
 
-main = print . length . sortUniq . concat . map (deliver (0, 0) []) . distribute =<< readFile "input"
+main = print . length . sortUniq . concatMap (deliver (0, 0) []) . distribute =<< readFile "input"
 
 distribute xs = distribute' ("", "") xs
     where distribute' (xs, ys) [] = [reverse xs, reverse ys]

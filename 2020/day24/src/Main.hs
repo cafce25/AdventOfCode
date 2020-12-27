@@ -1,11 +1,10 @@
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Main where
 
 import Control.Arrow ((&&&))
 import Data.List (group, sort)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromMaybe)
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Void (Void)
@@ -81,7 +80,7 @@ step b = S.fromList $ [(q, r) | let ((minQ, minR), (maxQ, maxR)) = bounds b
  -}
 
 prepare :: String -> Input
-prepare = fromJust . parseMaybe movesListP
+prepare = fromMaybe [] . parseMaybe movesListP
 
 main :: IO ()
 main = getInputContents >>= print . (part1 &&& part2) . prepare

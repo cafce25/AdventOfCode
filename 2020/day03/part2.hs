@@ -10,7 +10,7 @@ multiTrees trees = treesOnSlope 0 1 1 trees
 
 treeAt start shift (i, row) = '#' == row !! (start + shift * i)
 
-treesOnSlope start right down = length . (filter (treeAt start right)) . zip [0..] . everyN down
+treesOnSlope start right down = length . filter (treeAt start right) . zip [0..] . everyN down
 
 everyN n [] = []
 everyN n (x:xs) = x : everyN n (drop (n-1) xs)

@@ -1,7 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 import System.Environment
 
-main = getArgs >>= parse >>= print . (\x -> (minimum x) + (maximum x)) . seqThatSumsTo 466456641 10 . map read . lines
+main = getArgs >>= parse >>= print
+     . (\x -> minimum x + maximum x) . seqThatSumsTo 466456641 10
+     . map read . lines
 
 parse [] = readFile "input"
 parse fs = concat `fmap` mapM readFile fs

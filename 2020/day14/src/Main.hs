@@ -1,5 +1,4 @@
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE LambdaCase    #-}
 
 module Main where
 
@@ -75,7 +74,7 @@ fluctuateAdress (b:mask) addr
   | b == One  =  fluctuateAdress mask (addr .|. shift 1 sh)
   | b == Zero =  fluctuateAdress mask addr
   | otherwise =  fluctuateAdress mask (addr .|. shift 1 sh)
-              ++ fluctuateAdress mask (addr .&. (complement $ shift 1 sh))
+              ++ fluctuateAdress mask (addr .&. complement (shift 1 sh))
     where sh = length mask
 
 part2 :: Input -> Int
@@ -85,7 +84,7 @@ part2 = sum . elems . run
           go _ table [] = table
           go _ table ((Mask mask):ins) = go mask table ins
           go mask table ((Assign addr val):ins) = go mask table' ins
-              where table' = foldl (\m a -> (insert a val m)) table (fluctuateAdress mask addr)
+              where table' = foldl (\m a -> insert a val m) table (fluctuateAdress mask addr)
 
 prepare :: String -> Input
 prepare = map read . lines

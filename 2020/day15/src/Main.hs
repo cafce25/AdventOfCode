@@ -13,13 +13,13 @@ list start = start ++ l (length start) (last start) startMap
     where startMap = M.fromList (zip start [0..(pred.pred.length$ start)])
           l :: Int -> Int -> IntMap Int -> [Int]
           l n lastEl past = this: l (succ n) this (M.insert lastEl (pred n) past) 
-              where this = (pred n) - M.findWithDefault (pred n) lastEl past
+              where this = pred n - M.findWithDefault (pred n) lastEl past
                                                  
 part1 :: Input -> Int
-part1 = (!! (pred 2020)) . list
+part1 = (!! pred 2020) . list
 
 part2 :: Input -> Int
-part2 = (!! (pred 30000000)) . list
+part2 = (!! pred 30000000) . list
 
 prepare :: String -> Input
 prepare = map read . splitOn ","

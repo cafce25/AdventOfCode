@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Main where
 
@@ -68,8 +67,7 @@ pRule :: Parser Rule
 pRule = do
     var <- pVarname
     void (symbol ":")
-    expr <- pExpr
-    pure $ Rule var expr
+    Rule var <$> pExpr
 
 operatorTable :: [[Operator Parser Expr]]
 operatorTable =
@@ -93,7 +91,7 @@ part2 (rules, strings) = length . filter (isJust . parseMaybe parser0) $ strings
           parser0 = do
               void $ getParser' 42
               a <- some $ getParser' 42
-              void $ choice (map (repParser 31) [length a, (length a)-1..1])
+              void $ choice (map (repParser 31) [length a, length a - 1..1])
               eof
 
 prepare :: String -> Input

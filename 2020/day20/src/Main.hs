@@ -1,5 +1,4 @@
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Main where
@@ -8,6 +7,7 @@ import Control.Applicative
 import Control.Arrow ((&&&))
 import Control.Monad
 import Data.List
+import Data.Maybe (fromMaybe)
 import Data.Void
 import System.Environment (getArgs)
 import Text.Megaparsec
@@ -68,9 +68,7 @@ pTiles = (pTile `endBy` string "\n") <* eof
 prepare :: String -> Input
 prepare inp = tiles
     where mTiles = parseMaybe pTiles inp
-          tiles = case mTiles of
-                    Just t -> t
-                    Nothing -> []
+          tiles = fromMaybe [] mTiles
 
 main :: IO ()
 main = getInputContent >>= print . (part1 &&& part2) . prepare

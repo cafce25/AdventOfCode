@@ -1,11 +1,9 @@
---import qualified Data.Map as Map
 import Control.Applicative hiding (optional)
 import Data.List
 import System.Environment
 import System.IO
 import Text.ParserCombinators.ReadP
 import Text.Read
---import qualified Data.Map as Map
 import Data.Map as Map hiding (map)
 
 newtype Color = Color String deriving (Eq, Ord)
@@ -15,10 +13,10 @@ instance Show Color where
 
 instance Read Color where
     readPrec = lift $ do
-        adj <- munch1 lowerCaseChar
+        adj <- munch1 isAsciiLower
         skipSpaces
-        color <- munch1 lowerCaseChar
-        return. Color. intercalate " " $ [adj, color]
+        color <- munch1 isAsciiLower
+        return. Color. unwords $ [adj, color]
 
 newtype BagContents = BagContents (Int, Color)
 
@@ -30,7 +28,7 @@ instance Read BagContents where
     readPrec = lift contentBag
 
 readBagContents :: ReadP [BagContents]
-readBagContents = contentEmpty <|> (sepBy contentBag contentSep)
+readBagContents = contentEmpty <|> contentBag `sepBy` contentSep
 
 contentEmpty = do
     string "no other bags"
@@ -58,7 +56,7 @@ data Bag = Bag { color :: Color
 
 instance Show Bag where
     show bag = (show.color) bag ++ " bags contain " ++ cStr ++ "."
-        where cStr = if length (contents bag) > 0
+        where cStr = if null (contents bag)
                     then (intercalate ", " . map show . contents) bag
                     else "no other bags"
 
@@ -71,8 +69,6 @@ instance Read Bag where
         contents <- readBagContents
         char '.'
         return (Bag color contents)
-
-lowerCaseChar x = x >= 'a' && x <= 'z'
 
 main = getArgs
     >>= parse

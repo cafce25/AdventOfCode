@@ -3,7 +3,6 @@
 module Main where
 
 import           Control.Arrow ((&&&))
-import           Control.Monad (liftM)
 import           Control.Monad.Combinators.Expr
 import           Data.Maybe (mapMaybe)
 import           Data.Text (Text)
@@ -70,7 +69,7 @@ binary :: Text -> (Expr -> Expr -> Expr) -> Operator Parser Expr
 binary name f = InfixL (f <$ symbol name)
 
 parseSum :: Parser Expr -> Input -> Int
-parseSum p = sum. mapMaybe (liftM value <$> parseMaybe p)
+parseSum p = sum . mapMaybe (fmap value <$> parseMaybe p)
 
 part1 :: Input -> Int
 part1 = parseSum pExprSame 
@@ -79,7 +78,7 @@ part2 :: Input -> Int
 part2 = parseSum pExprPlusMul
 
 prepare :: String -> Input
-prepare = map (T.pack) . lines 
+prepare = map T.pack . lines 
 
 main :: IO ()
 main = getInput >>= print . (part1 &&& part2) . prepare

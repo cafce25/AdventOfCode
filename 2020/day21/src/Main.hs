@@ -1,14 +1,13 @@
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Main where
 
 import Control.Applicative hiding (some)
-import Control.Arrow ((&&&))
+import Control.Arrow ((&&&), second)
 import Control.Monad
 import Data.List
-import Data.Maybe (fromJust)
+import Data.Maybe (fromMaybe)
 import Data.Void
 import System.Environment (getArgs)
 import Text.Megaparsec
@@ -26,7 +25,7 @@ type Input = [Food]
 
 
 part1 :: Input -> Int
-part1 fs = length . filter (`notElem` ai) . concat . map ingredients $ fs
+part1 fs = length . filter (`notElem` ai) . concatMap ingredients $ fs
     where ai = allergeneIngredients fs
 
 allAllergenes :: [Food] -> [Allergene]
@@ -36,7 +35,7 @@ possibleIngredients :: Allergene -> [Food] -> [Ingredient]
 possibleIngredients a = foldr1 intersect . map ingredients . filter (elem a . allergenes)
 
 allergeneIngredients :: [Food] -> [Ingredient] 
-allergeneIngredients = concat . map snd . allergenesToIngredients
+allergeneIngredients = concatMap snd . allergenesToIngredients
 
 part2 :: Input -> String
 part2 = intercalate "," . map snd . sortOn fst . removeMultiples . sortOn (length . snd) . allergenesToIngredients
@@ -44,7 +43,7 @@ part2 = intercalate "," . map snd . sortOn fst . removeMultiples . sortOn (lengt
 removeMultiples :: [(Allergene, [Ingredient])] -> [(Allergene, Ingredient)]
 removeMultiples [] = []
 removeMultiples ((aller, [ingr]):rest) = (aller, ingr):removeMultiples sortedRest
-    where rest' = map (\(a, is) -> (a, delete ingr is)) rest
+    where rest' = map (second (delete ingr)) rest
           sortedRest = sortOn (length . snd) rest'
 removeMultiples r = error $ "ambiguos ingredients in " ++ show r
 
@@ -52,7 +51,7 @@ allergenesToIngredients :: [Food] -> [(Allergene, [Ingredient])]
 allergenesToIngredients fs = map (id &&& (`possibleIngredients` fs)) $ allAllergenes fs
 
 prepare :: String -> Input
-prepare = fromJust . parseMaybe foodsP
+prepare = fromMaybe [] . parseMaybe foodsP
 
 foodsP :: Parser [Food]
 foodsP = foodP `endBy` eol

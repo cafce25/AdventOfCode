@@ -1,5 +1,4 @@
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE LambdaCase #-}
 
 module Main where
 
@@ -55,15 +54,13 @@ readAssign :: ReadP Instruction
 readAssign = do
     fstPort <- readEitherPortOrImm
     skipAssignOp
-    destPort <- readPort
-    return $ Assign fstPort destPort
+    Assign fstPort <$> readPort
 
 readBinary :: String -> BinaryInstructionCons -> ReadP Instruction
 readBinary op gen = do
     (fstPort, sndPort) <- readOp op
     skipAssignOp
-    destPort <- readPort
-    return $ gen fstPort sndPort destPort
+    gen fstPort sndPort <$> readPort
 
 readOp :: String -> ReadP (Either Port Int, Port)
 readOp op = (do
@@ -91,8 +88,8 @@ skipAssignOp = do
     skipSpaces
 
 readEitherPortOrImm :: ReadP (Either Port Int)
-readEitherPortOrImm = do p <- readPort; return $ Left p
-                      +++ do imm <- readImm; return $ Right imm
+readEitherPortOrImm = do Left <$> readPort
+                  +++ do Right <$> readImm
 
 readPort :: ReadP Port
 readPort = many1 $ satisfy (`elem` ['a'..'z'])
@@ -104,16 +101,16 @@ readImm = readPrec_to_P readPrec 0
 getPortsTable :: Input -> Diagram
 getPortsTable instructions = table
     where table = M.fromList [case ins of 
-            (Assign (Right i) d)  -> (d, i)
-            (Assign (Left p) d)   -> (d, (table!p))
-            (And (Left fp) sp d)  -> (d, (table!fp .&. table!sp))
-            (And (Right i) sp d)  -> (d, (i .&. table!sp))
-            (Or (Left fp) sp d)   -> (d, (table!fp .|. table!sp))
-            (Or (Right i) sp d)   -> (d, (i .|. table!sp))
-            (Not (Left p) d)      -> (d, (complement$ table!p))
-            (Not (Right i) d)     -> (d, (complement i))
-            (Shift (Right i) p d) -> (d, (shift (table!p) i))
-            (Shift (Left s) p d)  -> (d, (shift (table!p) (table!s)))
+            (Assign (Right i)   d) -> (d, i)
+            (Assign (Left  p)   d) -> (d, table!p)
+            (And    (Left fp) p d) -> (d, table!fp .&. table!p)
+            (And    (Right i) p d) -> (d, i .&. table!p)
+            (Or     (Left fp) p d) -> (d, table!fp .|. table!p)
+            (Or     (Right i) p d) -> (d, i .|. table!p)
+            (Not    (Left  p)   d) -> (d, complement $ table!p)
+            (Not    (Right i)   d) -> (d, complement i)
+            (Shift  (Right i) p d) -> (d, shift (table!p) i)
+            (Shift  (Left sp) p d) -> (d, shift (table!p) (table!sp))
                 | ins <- instructions]
 
 part1 :: Input -> Int

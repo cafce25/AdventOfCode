@@ -1,6 +1,4 @@
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE BangPatterns #-}
 
 module Part2 where
 
@@ -12,7 +10,7 @@ import Common
 type Grid = Map Coordinate Int
 
 turn :: LightStatus -> [Coordinate] -> Grid -> Grid
-turn onoff = flip $ foldl' (\g c -> M.adjust (\x -> if onoff then x+1 else max (x-1) 0) c g)
+turn onoff = flip $ foldl' (flip $ M.adjust (\x -> if onoff then x+1 else max (x-1) 0))
 
 toggle :: [Coordinate] -> Grid -> Grid
 toggle = flip $ foldl' (flip $ M.adjust (+2))

@@ -14,8 +14,9 @@ parseOp line = case opStr of
     where
         [opStr, argStr] = words line
         parseArg ('+':argStr) = read argStr
-        parseArg ('-':argStr) = (- read argStr)
+        parseArg ('-':argStr) = -read argStr
         parseArg argStr = read argStr
+
 
 
 findLoop :: [Int] -> Int -> Int-> [Instruction] -> Int
