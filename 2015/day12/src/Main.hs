@@ -1,12 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Control.Arrow ((&&&))
 import Data.Aeson
-import Data.Scientific (toBoundedInteger)
 import Data.Foldable (toList)
-import qualified Data.ByteString.Lazy as B
 import Data.Maybe (fromJust)
+import Data.Scientific (toBoundedInteger)
 import System.Environment (getArgs)
+import qualified Data.ByteString.Lazy as B
 
 type Input = Value
 
@@ -21,8 +22,17 @@ numbers Null = []
 part1 :: Input -> Int
 part1 = sum . numbers
 
-part2 :: Input -> ()
-part2 = const ()
+numbers' :: Value -> [Int]
+numbers' (Object o) = if "red" `elem` l then [] else concatMap numbers' l
+    where l = toList o
+numbers' (Array a) = concatMap numbers' a
+numbers' (Number i) = [fromJust $ toBoundedInteger i]
+numbers' (String _) = []
+numbers' (Bool _) = []
+numbers' Null = []
+
+part2 :: Input -> Int
+part2 = sum . numbers'
 
 prepare :: B.ByteString -> Input
 prepare = fromJust . decode
