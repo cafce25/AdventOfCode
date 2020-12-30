@@ -33,8 +33,8 @@ cities edgeMap = nub $ fromCities ++ toCities
           fromCities = map fst pairs
           toCities = map snd pairs
 
-part2 :: Input -> ()
-part2 = const ()
+part2 :: Input -> Int
+part2 input = maximum . map (tripLength input) . permutations . cities $ input
 
 edge :: Parser (City, City, Distance)
 edge = do
