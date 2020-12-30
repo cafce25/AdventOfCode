@@ -80,10 +80,7 @@ parseRule = do
     pure $ Rule name ((x1, x2), (y1, y2))
 
 parseTicket :: RE Char Ticket
-parseTicket = do
-    nums <- many num 
-    string ""
-    pure nums 
+parseTicket = many num 
 
 num :: RE Char Int
 num = decimal <* many (sym ',')
