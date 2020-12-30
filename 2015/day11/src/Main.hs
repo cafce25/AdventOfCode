@@ -1,10 +1,9 @@
 module Main where
 
-import Control.Arrow ((&&&), first)
+import Control.Arrow (first)
 import Data.Char (chr, ord)
 import Data.List (foldl', unfoldr, intersect, group)
 import Data.Tuple (swap)
-import System.Environment (getArgs)
 
 type Input = String
 
@@ -44,22 +43,15 @@ noneOf x = null . intersect x
 validPw :: String -> Bool
 validPw = and . sequence [has3Consecutive, noneOf "iol", doublePair]
 
-part1 :: Input -> String
-part1 = head . filter validPw . map showAlpha26 . iterate succ . readAlpha26
+validPws :: [String]
+validPws = filter validPw . map showAlpha26 . iterate succ . readAlpha26 $ "cqjxjnds"
 
-part2 :: Input -> ()
-part2 = const ()
+part1 :: String
+part1 = head validPws
 
-prepare :: String -> Input
-prepare = const "cqjxjnds"
+part2 :: String
+part2 = validPws !! 1
 
 main :: IO ()
-main = getInputContents >>= print . (part1 &&& part2) . prepare
+main = print (part1, part2)
 
-getInputContents :: IO String
-getInputContents = do
-    args <- getArgs
-    case args of
-        []    -> readFile "input"
-        ["-"] -> getContents
-        fs    -> concat `fmap` mapM readFile fs
