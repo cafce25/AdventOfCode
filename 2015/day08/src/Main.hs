@@ -58,8 +58,17 @@ part1 input = codeLength - memoryUsed
                         )
             $ input
 
-part2 :: Input -> ()
-part2 input = ()
+escapeS :: String -> String
+escapeS u = '"' : go u ++ "\""
+    where go [] = []
+          go ('\\':xs) = "\\\\" ++ go xs
+          go ('"' :xs) = "\\\"" ++ go xs
+          go (x   :xs) = x:go xs
+
+part2 :: Input -> Int
+part2 input = escapedLength - codeLength
+    where codeLength = sum . map length $ input
+          escapedLength = sum . map (length . escapeS) $ input
 
 prepare :: String -> Input
 prepare = lines
